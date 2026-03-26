@@ -12,7 +12,7 @@ class TokenLockManager:
     
     def __init__(self):
         self.locks: Dict[str, float] = {}  # mint -> lock_time
-        self.timeout = TOKEN_LOCK_CONFIG.get("timeout_seconds", 3600)
+        self.timeout = TOKEN_LOCK_CONFIG.get("lock_timeout_seconds", 300)
         self.locked_count = 0
         self.released_count = 0
     
@@ -74,6 +74,10 @@ class TokenLockManager:
             logger.error(f"Error unlocking token: {e}")
             return False
     
+    def release_token(self, mint: str) -> bool:
+        """Alias for unlock_token for backward compatibility"""
+        return self.unlock_token(mint)
+
     def is_locked(self, mint: str) -> bool:
         """
         Check if token is locked

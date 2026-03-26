@@ -71,7 +71,7 @@ class TokenEnricher:
         self.settings = settings
         self.rpc_url = settings.solana_rpc_url
         self.event_bus = get_event_bus()
-        self.timeout = TIMEOUTS.get("enrichment", 5)
+        self.timeout = TIMEOUTS.get("token_enrichment", 20)
         self.enriched_count = 0
         self.failed_count = 0
         self.http_client = None
@@ -229,8 +229,19 @@ class TokenEnricher:
                 self._fetch_token_metadata(mint),
                 self._fetch_token_account(mint),
                 self._fetch_uri_metadata(enriched.uri),
-                return_exceptions=False
+                return_exceptions=True
             )
+
+            # Filter out exceptions (treat as None)
+            if isinstance(token_metadata, Exception):
+                logger.debug(f"token_metadata fetch failed: {token_metadata}")
+                token_metadata = None
+            if isinstance(account_info, Exception):
+                logger.debug(f"account_info fetch failed: {account_info}")
+                account_info = None
+            if isinstance(uri_metadata, Exception):
+                logger.debug(f"uri_metadata fetch failed: {uri_metadata}")
+                uri_metadata = None
             
             # Update enriched data
             if token_metadata:

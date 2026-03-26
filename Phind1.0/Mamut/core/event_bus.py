@@ -1,6 +1,6 @@
-﻿"""Async event bus for decoupled event processing"""
+"""Async event bus for decoupled event processing"""
 import asyncio
-from typing import Callable, Dict, List, Any, Awaitable, Optional
+from typing import Callable, Dict, List, Any, Awaitable, Optional, Union
 from dataclasses import dataclass
 from datetime import datetime
 from monitoring.logger import setup_logger
@@ -154,12 +154,16 @@ class EventBus:
             except asyncio.TimeoutError:
                 logger.warning("Event queue did not drain within timeout")
             
-            if self._worker_task:
-                await self._worker_task
+            if self._worker_task and not self._worker_task.done():
+                self._worker_task.cancel()
+                try:
+                    await self._worker_task
+                except asyncio.CancelledError:
+                    pass
             
             logger.info(f"Event bus stopped. Processed {self._event_count} events")
     
-    def get_listener_count(self, event_type: Optional[str] = None) -> Dict[str, int] | int:
+    def get_listener_count(self, event_type: Optional[str] = None) -> Union[Dict[str, int], int]:
         """Get number of listeners"""
         if event_type:
             return len(self._listeners.get(event_type, []))
