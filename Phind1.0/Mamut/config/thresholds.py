@@ -41,7 +41,8 @@ CREATOR_RISK_PATTERNS = {
     ],
     "suspicious_patterns": [
         "test", "debug", "fake", "new", "temp"
-    ]
+    ],
+    "wallet_age_min_days": 7,
 }
 
 # Trash Filter Thresholds
